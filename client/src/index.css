@@ -1,0 +1,29 @@
+@import "tailwindcss";
+
+/* Default variables (Light Mode) */
+:root {
+  --background: #a4a1a1;
+  --surface: #f4f4f4;
+  --text-primary: #1a1a1a;
+  --text-secondary: #555555;
+  --accent: #007bff;
+}
+
+/* Dark Mode Overrides */
+@media (prefers-color-scheme: dark) {
+  :root {
+    --background: #121212;      /* Deep grey, better than pure black */
+    --surface: #1e1e1e;         /* Lighter grey for cards/containers */
+    --text-primary: #ffffff;
+    --text-secondary: #b0b0b0;
+    --accent: #3793ff;          /* Slightly desaturated for dark backgrounds */
+  }
+}
+
+body::-webkit-scrollbar {
+  display: none;
+}
+
+button {
+  cursor: pointer;
+}
