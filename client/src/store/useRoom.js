@@ -29,7 +29,7 @@ const useRoom = create((set, get) => ({
         throw new Error(errorData.message || "Failed to create room");
       }
       const newRoom = await response.json();
-      console.log(newRoom);
+      
       window.location.href = `/room/${newRoom.data._id}`;
       return newRoom;
     } catch (error) {

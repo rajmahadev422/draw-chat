@@ -6,6 +6,7 @@ import RoomPage from "./pages/RoomPage";
 import ProtectedRoute from "./components/ProtectedRoute";
 import WaitingRoom from "./pages/WaitingRoom";
 import ChatPage from "./pages/ChatPage";
+import GamePage from "./pages/GamePage";
 
 const Router = createBrowserRouter([
   {
@@ -30,6 +31,10 @@ const Router = createBrowserRouter([
               {
                 index: true,
                 element: <ChatPage />
+              },
+              {
+                path: "game",
+                element: <GamePage />
               }
             ]
           }

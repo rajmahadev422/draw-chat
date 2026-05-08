@@ -1,8 +1,8 @@
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { Outlet, useParams } from "react-router-dom";
 import useRoom from "../store/useRoom";
 import useAuth from "../store/useAuth";
-import { connectWS } from "../utils/socket";
+import { connectWS, openFullscreen } from "../utils/socket";
 import toast from "react-hot-toast";
 
 export default function WaitingRoom() {
@@ -12,11 +12,15 @@ export default function WaitingRoom() {
   const { user } = useAuth();
   const [players, setPlayers] = useState();
 
+  const screenRef = useRef();
+
   useEffect(() => {
     const io = connectWS();
 
     io.on("connect", () => {
+
       initialize(io);
+
       io.emit("join-room", { roomId, user });
 
       io.on("active-users", (activeRooms) => {
@@ -37,10 +41,10 @@ export default function WaitingRoom() {
     };
   }, [roomId]);
   return (
-    <div className="flex fixed top-0 left-0 right-0 h-screen z-200">
+    <div ref={screenRef} className="flex fixed top-0 left-0 right-0 h-screen z-200">
 
   {/* Sidebar */}
-  <div className="w-72 h-screen overflow-y-auto border-r border-white/10 bg-[#111827] p-5 shrink-0">
+  <div className="w-72 h-screen overflow-y-auto relative border-r border-white/10 bg-[#111827] p-5 shrink-0">
 
     <div className="flex items-center sticky top-0 justify-between mb-6">
       <h2 className="text-2xl font-bold tracking-wide">
@@ -81,6 +85,7 @@ export default function WaitingRoom() {
 
   {/* Main Content */}
   <div className="flex-1 px-3 h-screen overflow-y-auto bg-slate-950">
+    <button className="fixed top-10 right-10" onClick={() => openFullscreen(screenRef)}>F</button>
     <Outlet />
   </div>
 </div>

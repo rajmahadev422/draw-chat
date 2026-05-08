@@ -15,7 +15,7 @@ export default function Chat() {
 
   const sendMessage = () => {
     if (!message.trim()) return;
-console.log(message);
+    
     io.emit("send-msg", { roomId, message, userId: user._id });
 
     setMessage("");
