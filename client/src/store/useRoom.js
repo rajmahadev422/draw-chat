@@ -16,7 +16,7 @@ const useRoom = create((set, get) => ({
     const roomData = Object.fromEntries(formData.entries());
     
     try {
-      const response = await fetch(`${backendUrl}/api/chat-draw/create-room`, {
+      const response = await fetch(`${backendUrl}/chat-draw/create-room`, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
@@ -44,7 +44,7 @@ const useRoom = create((set, get) => ({
     let { roomId } = Object.fromEntries(formData.entries());
     
     try {
-      const res = await fetch(`${backendUrl}/api/chat-draw/find-room/${roomId}`, {credentials: "include"});
+      const res = await fetch(`${backendUrl}/chat-draw/find-room/${roomId}`, {credentials: "include"});
 
       const data = await res.json();
 
@@ -59,29 +59,7 @@ const useRoom = create((set, get) => ({
   },
 
   io: null,
-  messages: [{userId: 123, message: "Hii"}, {userId: 124, message: "Hii"}, {userId: "69fb504deff1fa1aa833d8ac", message: "Hii"}],
-
-  roomFlow: async (roomId, user) => {
-  const io = connectWS();
-  if(!io) return;
-  set({io: io});
-
-  io.on("connect", () => {
-    io.emit("join-room", {roomId, user})
-
-    io.on("joinNotice", (name) => {
-      toast.info(`${name} joined the group.`);
-    });
-
-
-  })
-
-  },
-  sendMsg: (roomId, msg, userId) => {
-    const io = get().io;
-   console.log(roomId, userId, msg)
-   io.emit("send-msg", {roomId, msg, userId});
-  },
+  messages: [],
 
   handleMsg: (msg) => {
     set({messages: [...get().messages, msg]})

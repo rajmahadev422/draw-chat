@@ -15,7 +15,7 @@ const useAuth = create((set, get) => ({
     const formValues = Object.fromEntries(formData.entries());
 
     try {
-      const res = await fetch(`${backendUrl}/api/auth/login`, {
+      const res = await fetch(`${backendUrl}/auth/login`, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
@@ -36,7 +36,8 @@ const useAuth = create((set, get) => ({
       e.target.reset();
       window.location.href = "/";
     } catch (err) {
-      toast.error("Login failed. Please try again.");
+      toast.error(err.message);
+      console.log(err.message)
     } finally {
       set({ loading: false });
     }
@@ -58,7 +59,7 @@ const useAuth = create((set, get) => ({
     }
 
     try {
-      const res = await fetch(`${backendUrl}/api/auth/register`, {
+      const res = await fetch(`${backendUrl}/auth/register`, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
@@ -94,7 +95,7 @@ const useAuth = create((set, get) => ({
   checkUser: async () => {
     set({ userLoading: true });
     try {
-      const res = await fetch(`${backendUrl}/api/auth/get-user`, {
+      const res = await fetch(`${backendUrl}/auth/get-user`, {
         credentials: "include",
       });
       if (!res.ok) {
@@ -105,6 +106,7 @@ const useAuth = create((set, get) => ({
         return null;
       }
       set({ user: data.data });
+      toast.success(`User ${data.data.name}`)
     } catch (err) {
       return null;
     } finally {

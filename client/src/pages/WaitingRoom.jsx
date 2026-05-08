@@ -8,7 +8,7 @@ import toast from "react-hot-toast";
 export default function WaitingRoom() {
   const { roomId } = useParams();
 
-  const { roomFlow, initialize } = useRoom();
+  const { roomFlow, initialize, handleMsg } = useRoom();
   const { user } = useAuth();
   const [players, setPlayers] = useState();
 
@@ -27,6 +27,7 @@ export default function WaitingRoom() {
     });
 
     io.on("error-message", (error) => toast.error(error));
+    io.on("receive-msg", handleMsg);
     io.on("join-notice", (username) => {
       toast.success(`${username} joined the group!`);
     });

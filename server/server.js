@@ -7,6 +7,7 @@ import mongoose from "mongoose";
 import cookieParser from "cookie-parser";
 import path from "path";
 import { fileURLToPath } from "url";
+// import cors from "cors";
 //local imports
 import chatDrawSocket from "./socket/chatDraw.socket.js";
 import chatDrawRouter from "./routes/chatDraw.route.js";
@@ -30,6 +31,7 @@ const chatDrawIo = new Server(server, {
 //   credentials: true,
 // }
 // ));
+
 app.use(cookieParser());
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
