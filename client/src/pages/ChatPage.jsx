@@ -23,7 +23,7 @@ export default function Chat() {
   };
 
   return (
-    <div className="w-full max-w-4xl mx-auto h-screen bg-slate-900 flex flex-col overflow-hidden">
+    <div className="w-full max-w-4xl mx-auto h-full bg-slate-900 flex flex-col overflow-hidden">
       {/* Messages */}
       <div className="flex-1 overflow-y-auto px-4 py-6 space-y-4 bg-linear-to-b from-slate-950 to-slate-900">
         {messages.map((msg, index) => {

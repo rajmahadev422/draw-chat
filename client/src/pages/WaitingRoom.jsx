@@ -44,7 +44,7 @@ export default function WaitingRoom() {
     <div ref={screenRef} className="flex fixed top-0 left-0 right-0 h-screen z-200">
 
   {/* Sidebar */}
-  <div className="w-72 h-screen overflow-y-auto relative border-r border-white/10 bg-[#111827] p-5 shrink-0">
+  <div className="w-50 h-screen overflow-y-auto relative border-r border-white/10 bg-[#111827] p-5 shrink-0">
 
     <div className="flex items-center sticky top-0 justify-between mb-6">
       <h2 className="text-2xl font-bold tracking-wide">
@@ -73,10 +73,6 @@ export default function WaitingRoom() {
             <span className="font-medium">
               {pl.name}
             </span>
-
-            <span className="text-xs text-gray-400">
-              Online
-            </span>
           </div>
         </div>
       ))}
@@ -84,7 +80,7 @@ export default function WaitingRoom() {
   </div>
 
   {/* Main Content */}
-  <div className="flex-1 px-3 h-screen overflow-y-auto bg-slate-950">
+  <div className="flex-1 px-1 h-screen overflow-y-auto bg-slate-950">
     <button className="fixed top-10 right-10" onClick={() => openFullscreen(screenRef)}>F</button>
     <Outlet />
   </div>

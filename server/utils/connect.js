@@ -23,7 +23,7 @@ export const protect = (req, res, next) => {
 };
 
 import cron from "node-cron";
-import Room from "../models/Room.model";
+import Room from "../models/Room.model.js";
 
 cron.schedule("* * * * *", async () => {
   const twentyMinAgo = new Date(Date.now() - 20 * 60 * 1000);

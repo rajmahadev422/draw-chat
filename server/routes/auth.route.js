@@ -27,8 +27,6 @@ authRouter.post("/login", async (req, res) => {
     }
     const token = generateToken(user);
 
-    console.log("Logged in Token: ", token);
-
     return res
       .cookie("refreshtoken", token, {
         httpOnly: true,
@@ -69,7 +67,7 @@ authRouter.post("/register", async (req, res, next) => {
     });
 
     const token = generateToken(user);
-    
+
     res
       .cookie("refreshToken", token, {
         httpOnly: true,
@@ -99,8 +97,6 @@ authRouter.get("/get-user", protect, async (req, res) => {
   const userId = req.userId.id;
 
   const user = await User.findById(userId).select("-password");
-  
-  console.log(user);
 
   return res
     .status(200)
