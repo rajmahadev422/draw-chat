@@ -21,3 +21,22 @@ export const protect = (req, res, next) => {
     return res.status(401).json({ message: "Invalid token" });
   }
 };
+
+import cron from "node-cron";
+import Room from "../models/Room.model";
+
+cron.schedule("* * * * *", async () => {
+  const twentyMinAgo = new Date(Date.now() - 20 * 60 * 1000);
+
+  await Room.updateMany(
+    {
+      status: "open",
+      createdAt: { $lte: twentyMinAgo },
+    },
+    {
+      $set: { status: "closed" },
+    }
+  );
+
+  console.log("Expired rooms closed");
+});

@@ -62,6 +62,7 @@ const useRoom = create((set, get) => ({
   messages: [],
 
   handleMsg: (msg) => {
+    console.log(msg)
     set({messages: [...get().messages, msg]})
   }
 }));

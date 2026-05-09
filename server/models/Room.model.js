@@ -47,6 +47,10 @@ const roomSchema = new mongoose.Schema(
       },
     ],
 
+    status: {
+      type: String,
+      default: "open"
+    },
     chats: [
       {
         id: {

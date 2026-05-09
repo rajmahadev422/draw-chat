@@ -47,9 +47,9 @@ export default function chatDrawSocket(io, socket) {
     io.to(roomId).emit("active-users", activeRooms[roomId]);
   });
 
-  socket.on("send-msg", ({ roomId, message, userId }) => {
+  socket.on("send-msg", ({ roomId, message, userId, name }) => {
 
-    const newMsg = new Message({ message, userId });
+    const newMsg = new Message({ message, userId, name });
 
     io.to(roomId).emit("receive-msg", newMsg);
   });
