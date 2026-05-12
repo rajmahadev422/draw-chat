@@ -47,10 +47,14 @@ export default function chatDrawSocket(io, socket) {
     // notify room
 
     socket.to(roomId).emit("join-notice", user.name);
-
+    socket.emit("rooms-list", rooms);
     io.to(roomId).emit("active-users", activeRooms[roomId]);
   });
 
+  socket.on("get-rooms", () => {
+    console.log("rooms", rooms, activeRooms);
+    socket.emit("rooms-list", rooms);
+  })
     // A segment = one mouse-move tick (tiny payload)
   socket.on("draw-segment", (data) => {
     const { roomId, segment } = data;

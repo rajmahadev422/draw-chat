@@ -7,6 +7,7 @@ import ProtectedRoute from "./components/ProtectedRoute";
 import WaitingRoom from "./pages/WaitingRoom";
 import ChatPage from "./pages/ChatPage";
 import GamePage from "./pages/GamePage";
+import ActiveRooms from "./pages/ActiveRooms";
 
 const Router = createBrowserRouter([
   {
@@ -23,6 +24,10 @@ const Router = createBrowserRouter([
           {
             path: "/room",
             element: <RoomPage />,
+          },
+          {
+            path: "/room/all",
+            element: <ActiveRooms />
           },
           {
             path: "/room/:roomId",

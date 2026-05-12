@@ -35,7 +35,7 @@ export default function HomePage() {
           ✏️ Play now
         </Link>
         <a
-          href="#"
+          href="/room/all"
           className="flex items-center gap-2 border border-gray-200 dark:border-neutral-700 bg-white dark:bg-neutral-900 hover:bg-gray-50 dark:hover:bg-neutral-800 text-gray-800 dark:text-neutral-200 rounded-lg px-5 py-2.5 text-sm font-medium transition-all"
         >
           👥 Browse rooms
