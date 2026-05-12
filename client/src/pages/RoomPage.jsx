@@ -1,107 +1,78 @@
 import React, { useState } from "react";
-import {
-  FaUsers,
-  FaUserPlus,
-  FaDoorOpen,
-  FaHashtag,
-  FaUserFriends,
-  FaArrowRight,
-  FaGamepad,
-} from "react-icons/fa";
-import { MdSportsEsports, MdCreate, MdLogin } from "react-icons/md";
 import CreateRoom from "../components/room/CreateRoom";
 import JoinRoom from "../components/room/JoinRoom";
 
 export default function RoomPage() {
-  // State for active tab
   const [activeTab, setActiveTab] = useState("create");
 
-  // Error state for validation
-  const [errors, setErrors] = useState({});
-  const [successMessage, setSuccessMessage] = useState("");
-
   return (
-    <div className="min-h-screen bg-linear-to-br from-indigo-900 via-purple-800 to-pink-800 flex items-center justify-center px-4 py-12">
-      {/* Decorative background elements */}
-      <div className="absolute inset-0 overflow-hidden">
-        <div className="absolute -top-40 -right-40 w-80 h-80 bg-purple-400 rounded-full mix-blend-multiply filter blur-3xl opacity-20 animate-pulse"></div>
-        <div className="absolute -bottom-40 -left-40 w-80 h-80 bg-pink-400 rounded-full mix-blend-multiply filter blur-3xl opacity-20 animate-pulse delay-1000"></div>
-        <div className="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 w-96 h-96 bg-indigo-400 rounded-full mix-blend-multiply filter blur-3xl opacity-20 animate-pulse delay-500"></div>
+    <div className="relative min-h-screen bg-[#0f0a1e] flex items-center justify-center px-4 py-12 overflow-hidden">
+      {/* Ambient blobs */}
+      <div className="pointer-events-none absolute inset-0">
+        <div className="absolute -top-20 -right-20 w-72 h-72 rounded-full bg-purple-600 opacity-15 blur-3xl" />
+        <div className="absolute -bottom-20 -left-20 w-72 h-72 rounded-full bg-pink-600 opacity-15 blur-3xl" />
+        <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-80 h-80 rounded-full bg-blue-600 opacity-10 blur-3xl" />
       </div>
 
-      {/* Main Card */}
-      <div className="relative w-full max-w-lg">
-        <div className="bg-white/10 backdrop-blur-xl rounded-2xl shadow-2xl border border-white/20 overflow-hidden">
+      <div className="relative w-full max-w-md">
+        {/* Card */}
+        <div className="bg-white/[0.07] backdrop-blur-xl border border-white/[0.13] rounded-2xl overflow-hidden shadow-2xl">
           {/* Header */}
-          <div className="text-center pt-8 pb-6">
-            <div className="inline-flex items-center justify-center w-20 h-20 bg-linear-to-r from-indigo-500 to-purple-500 rounded-2xl shadow-lg mb-4">
-              <FaGamepad className="text-4xl text-white" />
+          <div className="text-center px-6 pt-8 pb-5">
+            <div className="w-14 h-14 mx-auto mb-4 rounded-2xl bg-gradient-to-br from-purple-600 to-pink-600 flex items-center justify-center">
+              <svg
+                xmlns="http://www.w3.org/2000/svg"
+                width="26"
+                height="26"
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="white"
+                strokeWidth="1.8"
+                strokeLinecap="round"
+                strokeLinejoin="round"
+              >
+                <rect x="2" y="6" width="20" height="12" rx="2" />
+                <path d="M12 12h.01M8 12h.01M16 12h.01" />
+              </svg>
             </div>
-            <h1 className="text-3xl font-bold text-white mb-2">Game Rooms</h1>
-            <p className="text-white/70 text-sm">
+            <h1 className="text-xl font-medium text-white mb-1">Game rooms</h1>
+            <p className="text-sm text-white/45">
               Create or join a room to start playing
             </p>
           </div>
 
-          {/* Tab Navigation */}
-          <div className="flex border-b border-white/20">
-            <button
-              onClick={() => {
-                setActiveTab("create");
-                setErrors({});
-                setSuccessMessage("");
-              }}
-              className={`flex-1 py-4 text-center font-semibold transition-all duration-300 relative flex items-center justify-center gap-2 ${
-                activeTab === "create"
-                  ? "text-white"
-                  : "text-white/50 hover:text-white/80"
-              }`}
-            >
-              <MdCreate className="text-lg" />
-              Create Room
-              {activeTab === "create" && (
-                <div className="absolute bottom-0 left-0 right-0 h-0.5 bg-linear-to-r from-indigo-400 to-purple-400 rounded-full"></div>
-              )}
-            </button>
-            <button
-              onClick={() => {
-                setActiveTab("join");
-                setErrors({});
-                setSuccessMessage("");
-              }}
-              className={`flex-1 py-4 text-center font-semibold transition-all duration-300 relative flex items-center justify-center gap-2 ${
-                activeTab === "join"
-                  ? "text-white"
-                  : "text-white/50 hover:text-white/80"
-              }`}
-            >
-              <MdLogin className="text-lg" />
-              Join Room
-              {activeTab === "join" && (
-                <div className="absolute bottom-0 left-0 right-0 h-0.5 bg-linear-to-r from-indigo-400 to-purple-400 rounded-full"></div>
-              )}
-            </button>
+          {/* Tabs */}
+          <div className="flex border-b border-white/[0.09]">
+            {[
+              { key: "create", label: "Create room", icon: "+" },
+              { key: "join", label: "Join room", icon: "→" },
+            ].map(({ key, label, icon }) => (
+              <button
+                key={key}
+                onClick={() => setActiveTab(key)}
+                className={`flex-1 py-3.5 flex items-center justify-center gap-2 text-sm font-medium relative transition-colors ${
+                  activeTab === key
+                    ? "text-white"
+                    : "text-white/40 hover:text-white/70"
+                }`}
+              >
+                <span className="text-base leading-none">{icon}</span>
+                {label}
+                {activeTab === key && (
+                  <span className="absolute bottom-0 left-[10%] right-[10%] h-0.5 rounded-full bg-gradient-to-r from-purple-500 to-pink-500" />
+                )}
+              </button>
+            ))}
           </div>
 
-          {/* Success Message */}
-          {successMessage && (
-            <div className="mx-6 mt-4 p-3 bg-emerald-500/20 border border-emerald-500/50 rounded-lg">
-              <p className="text-emerald-100 text-sm text-center">
-                {successMessage}
-              </p>
-            </div>
-          )}
-
-          {/* Create Room Form */}
-          {activeTab === "create" && <CreateRoom />}
-
-          {/* Join Room Form */}
-          {activeTab === "join" && <JoinRoom />}
+          {/* Forms */}
+          <div className="p-5">
+            {activeTab === "create" ? <CreateRoom /> : <JoinRoom />}
+          </div>
         </div>
 
-        {/* Footer */}
-        <p className="text-center text-white/30 text-xs mt-6">
-          All room data is logged to console for demo purposes
+        <p className="text-center text-white/20 text-[11px] mt-5">
+          All room data is for demo purposes only
         </p>
       </div>
     </div>

@@ -1,89 +1,11 @@
 import { useState, useRef, useEffect, useCallback } from "react";
 import useRoom from "../store/useRoom";
 import { useParams } from "react-router-dom";
-
-const PALETTE = [
-  "#e5f0e5",
-  "#ffdd57",
-  "#ff6b6b",
-  "#74c7ec",
-  "#a6e3a1",
-  "#cba6f7",
-  "#fab387",
-  "#f38ba8",
-];
-const TOOLS = [
-  { id: "pen", emoji: "✏️", key: "p" },
-  { id: "line", emoji: "📏", key: "l" },
-  { id: "rect", emoji: "⬜", key: "r" },
-  { id: "circle", emoji: "⭕", key: "c" },
-  { id: "eraser", emoji: "🧹", key: "e" },
-];
-
-// ── draw a single delta segment (pen/eraser tick) ──────────────────
-function applySegment(ctx, seg) {
-  ctx.save();
-  ctx.strokeStyle = seg.color;
-  ctx.lineWidth = seg.size;
-  ctx.lineCap = "round";
-  ctx.lineJoin = "round";
-  ctx.globalAlpha = seg.opacity ?? 1;
-  if (seg.tool === "eraser") {
-    ctx.globalCompositeOperation = "destination-out";
-    ctx.globalAlpha = 1;
-  }
-  ctx.beginPath();
-  ctx.moveTo(seg.x1, seg.y1);
-  ctx.lineTo(seg.x2, seg.y2);
-  ctx.stroke();
-  ctx.restore();
-}
-
-// ── draw a full committed stroke (for init / shape tools) ──────────
-function drawFullStroke(ctx, s) {
-  ctx.save();
-  ctx.strokeStyle = s.color;
-  ctx.lineWidth = s.size;
-  ctx.lineCap = "round";
-  ctx.lineJoin = "round";
-  ctx.globalAlpha = s.opacity ?? 1;
-  if (s.tool === "eraser") {
-    ctx.globalCompositeOperation = "destination-out";
-    ctx.globalAlpha = 1;
-  }
-  if (s.tool === "pen" || s.tool === "eraser") {
-    if (!s.points?.length) {
-      ctx.restore();
-      return;
-    }
-    ctx.beginPath();
-    ctx.moveTo(s.points[0].x, s.points[0].y);
-    s.points.forEach((p) => ctx.lineTo(p.x, p.y));
-    ctx.stroke();
-  } else if (s.tool === "line") {
-    ctx.beginPath();
-    ctx.moveTo(s.x1, s.y1);
-    ctx.lineTo(s.x2, s.y2);
-    ctx.stroke();
-  } else if (s.tool === "rect") {
-    ctx.strokeRect(s.x1, s.y1, s.x2 - s.x1, s.y2 - s.y1);
-  } else if (s.tool === "circle") {
-    ctx.beginPath();
-    ctx.ellipse(
-      (s.x1 + s.x2) / 2,
-      (s.y1 + s.y2) / 2,
-      Math.abs(s.x2 - s.x1) / 2,
-      Math.abs(s.y2 - s.y1) / 2,
-      0,
-      0,
-      Math.PI * 2,
-    );
-    ctx.stroke();
-  }
-  ctx.restore();
-}
+import { MdDeleteOutline } from "react-icons/md";
+import useGame from "../store/useGame";
 
 export default function Blackboard() {
+  const { PALETTE, applySegment, TOOLS, drawFullStroke } = useGame();
   // ── refs ─────────────────────────────────────────────────────────
   const cvRef = useRef(null);
   const wrapRef = useRef(null);
@@ -160,11 +82,24 @@ export default function Blackboard() {
   }, []);
 
   const resize = useCallback(() => {
-    const cv = cvRef.current,
-      wrap = wrapRef.current;
+    const cv = cvRef.current;
+    const wrap = wrapRef.current;
+
     if (!cv || !wrap) return;
-    cv.width = wrap.clientWidth - 32;
-    cv.height = wrap.clientHeight - 32;
+
+    const aspect = 16 / 9;
+
+    let w = wrap.clientWidth - 32;
+    let h = w / aspect;
+
+    if (h > wrap.clientHeight - 32) {
+      h = wrap.clientHeight - 32;
+      w = h * aspect;
+    }
+
+    cv.width = w;
+    cv.height = h;
+
     redrawAll();
   }, [redrawAll]);
 
@@ -235,7 +170,11 @@ export default function Blackboard() {
   const gp = (e) => {
     const r = cvRef.current.getBoundingClientRect();
     const s = e.touches ? e.touches[0] : e;
-    return { x: s.clientX - r.left, y: s.clientY - r.top };
+
+    return {
+      x: (s.clientX - r.left) / cvRef.current.width,
+      y: (s.clientY - r.top) / cvRef.current.height,
+    };
   };
 
   const onDown = (e) => {
@@ -281,7 +220,9 @@ export default function Blackboard() {
         socketRef.current?.emit("draw-segment", { roomId, segment: seg });
     } else {
       // Shape preview — only local
-      ctx.putImageData(drRef.current.snap, 0, 0);
+      ctx.clearRect(0, 0, cv.width, cv.height);
+
+      drRef.current.strokes.forEach((s) => drawFullStroke(ctx, s));
       drawFullStroke(ctx, {
         tool: t,
         color: colorR.current,
@@ -362,35 +303,14 @@ export default function Blackboard() {
       {children}
     </button>
   );
-
+  // ── render ────────────────────────────────────────────────────────
   return (
-    <div className="flex h-full bg-[#111] text-white overflow-hidden select-none">
-      {/* CANVAS */}
-      <div
-        ref={wrapRef}
-        className="flex-1 flex items-center justify-center overflow-hidden bg-[#0e0e0e]"
-      >
-        <canvas
-          ref={cvRef}
-          className={`block p-0 rounded ${tool === "eraser" ? "cursor-cell" : "cursor-crosshair"}`}
-          style={{
-            background: "#0c1a0c",
-            border: "2px solid #1a2e1a",
-            boxShadow:
-              "0 0 100px rgba(0,0,0,.9), inset 0 0 60px rgba(0,0,0,.5)",
-            touchAction: "none",
-          }}
-          onPointerDown={onDown}
-          onPointerMove={onMove}
-          onPointerUp={onUp}
-          onPointerLeave={onUp}
-        />
-      </div>
-      {/* TOP BAR */}
-      <div className="grid items-center gap-1 px-1 bg-[#0a0a0a] border-b border-white/6 w-20 shrink-0">
+    <div className="flex flex-col h-full bg-[#0e0e0e] text-white overflow-hidden select-none">
+      {/* ── TOP TOOLBAR ── */}
+      <div className="flex items-center gap-0.5 px-2 py-1.5 bg-[#0a0a0a] border-b border-white/6 flex-wrap shrink-0">
         {/* Tools */}
-        <div className="grid items-center gap-1 pr-3 border-r border-white/[0.07]">
-          <span className="text-[9px] text-neutral-700 uppercase tracking-widest mr-1">
+        <div className="flex items-center gap-1 px-2 border-r border-white/[0.07]">
+          <span className="text-[9px] text-white/20 uppercase tracking-widest mr-1">
             Tool
           </span>
           {TOOLS.map((t) => (
@@ -398,10 +318,10 @@ export default function Blackboard() {
               key={t.id}
               title={`${t.id} (${t.key.toUpperCase()})`}
               onClick={() => setTool(t.id)}
-              className={`w-9 h-9 rounded-xl border text-base flex items-center justify-center transition-all ${
+              className={`w-8 h-8 rounded-lg border text-sm flex items-center justify-center transition-all ${
                 tool === t.id
-                  ? "border-blue-500 bg-blue-600 text-white shadow-lg shadow-blue-900/40"
-                  : "border-white/10 bg-white/5 text-neutral-400 hover:bg-white/10 hover:border-white/20"
+                  ? "border-purple-500 bg-purple-700 text-white shadow-lg shadow-purple-900/40"
+                  : "border-white/10 bg-white/4 text-white/40 hover:bg-white/9 hover:text-white"
               }`}
             >
               {t.emoji}
@@ -410,8 +330,8 @@ export default function Blackboard() {
         </div>
 
         {/* Size */}
-        <div className="grid items-center gap-2 pr-3 border-r border-white/[0.07]">
-          <span className="text-[9px] text-neutral-700 uppercase tracking-widest">
+        <div className="flex items-center gap-2 px-3 border-r border-white/[0.07]">
+          <span className="text-[9px] text-white/20 uppercase tracking-widest">
             Size
           </span>
           <input
@@ -420,14 +340,16 @@ export default function Blackboard() {
             max="60"
             value={size}
             onChange={(e) => setSizeW(e.target.value)}
-            className="w-20 accent-blue-500 cursor-pointer"
+            className="w-20 accent-purple-500 cursor-pointer"
           />
-          <span className="text-xs text-neutral-600 w-5 font-mono">{size}</span>
+          <span className="text-[11px] text-white/30 font-mono w-5">
+            {size}
+          </span>
         </div>
 
         {/* Opacity */}
-        <div className="grid items-center gap-2 pr-3 border-r border-white/[0.07]">
-          <span className="text-[9px] text-neutral-700 uppercase tracking-widest">
+        <div className="flex items-center gap-2 px-3 border-r border-white/[0.07]">
+          <span className="text-[9px] text-white/20 uppercase tracking-widest">
             Opacity
           </span>
           <input
@@ -436,18 +358,34 @@ export default function Blackboard() {
             max="100"
             value={opacity}
             onChange={(e) => setOpW(e.target.value)}
-            className="w-14 accent-purple-400 cursor-pointer"
+            className="w-16 accent-violet-400 cursor-pointer"
           />
-          <span className="text-xs text-neutral-600 w-6 font-mono">
+          <span className="text-[11px] text-white/30 font-mono w-8">
             {opacity}%
           </span>
         </div>
 
         {/* Colors */}
-        <div className="grid items-center gap-1.5 pr-3 border-r border-white/[0.07]">
-          <span className="text-[9px] text-neutral-700 uppercase tracking-widest mr-1">
+        <div className="flex items-center gap-1.5 px-3 border-r border-white/[0.07]">
+          <span className="text-[9px] text-white/20 uppercase tracking-widest mr-1">
             Color
           </span>
+          {PALETTE.map((c) => (
+            <button
+              key={c}
+              onClick={() => {
+                setColorW(c);
+                if (tool === "eraser") setTool("pen");
+              }}
+              title={c}
+              className={`w-5 h-5 rounded-full shrink-0 transition-transform hover:scale-110 ${
+                color === c
+                  ? "ring-2 ring-white/70 ring-offset-1 ring-offset-black"
+                  : ""
+              }`}
+              style={{ background: c }}
+            />
+          ))}
           <input
             type="color"
             value={color}
@@ -455,25 +393,82 @@ export default function Blackboard() {
               setColorW(e.target.value);
               if (tool === "eraser") setTool("pen");
             }}
-            className="w-7 h-7 rounded-full cursor-pointer bg-transparent border-none outline-none"
+            title="Custom color"
+            className="w-6 h-6 rounded-full cursor-pointer bg-transparent border-none outline-none ml-0.5"
           />
         </div>
 
         {/* Actions */}
-        <div className="flex items-center gap-1.5">
-          <Btn
-            onClick={clearBoard}
-            cls="border-white/10 bg-white/5 text-neutral-400 hover:bg-red-950/40 hover:border-red-900/60 hover:text-red-400"
+        <div className="flex items-center gap-2 px-2 ml-auto">
+          <span className="text-[10px] text-white/15 font-mono mr-1">
+            {count} strokes
+          </span>
+          <button
+            onClick={savePNG}
+            className="flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg border border-white/9 bg-white/4 text-white/50 hover:bg-white/9 hover:text-white text-xs transition-all"
           >
-            🗑 Clear
-          </Btn>
-          <Btn onClick={savePNG}>🖼 PNG</Btn>
+            <svg
+              xmlns="http://www.w3.org/2000/svg"
+              width="12"
+              height="12"
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              strokeWidth="2"
+              strokeLinecap="round"
+              strokeLinejoin="round"
+            >
+              <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4" />
+              <polyline points="7 10 12 15 17 10" />
+              <line x1="12" y1="15" x2="12" y2="3" />
+            </svg>
+            PNG
+          </button>
+          <button
+            onClick={clearBoard}
+            className="flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg border border-white/9 bg-white/4 text-white/50 hover:bg-red-500/15 hover:border-red-500/30 hover:text-red-400 text-xs transition-all"
+          >
+            <MdDeleteOutline />
+            Clear
+          </button>
         </div>
-
-        <span className="ml-auto text-[10px] text-neutral-800 font-mono">
-          {count}
-        </span>
       </div>
+
+      {/* ── CANVAS ── */}
+      <div
+        ref={wrapRef}
+        className="flex-1 flex items-center justify-center overflow-hidden bg-[#0e0e0e] p-4"
+      >
+        <canvas
+          ref={cvRef}
+          className={
+            tool === "eraser"
+              ? "cursor-cell rounded"
+              : "cursor-crosshair rounded"
+          }
+          style={{
+            width: "100%",
+            height: "100%",
+            maxWidth: "100%",
+            maxHeight: "100%",
+            background: "#0c1a0c",
+            border: "1.5px solid #1a2e1a",
+            boxShadow: "0 0 80px rgba(0,0,0,.9), inset 0 0 40px rgba(0,0,0,.5)",
+            touchAction: "none",
+          }}
+          onPointerDown={onDown}
+          onPointerMove={onMove}
+          onPointerUp={onUp}
+          onPointerLeave={onUp}
+        />
+      </div>
+
+      {/* ── TOAST ── */}
+      {toast.v && (
+        <div className="fixed bottom-5 left-1/2 -translate-x-1/2 z-50 bg-slate-800 border border-white/1 text-white/80 text-xs px-4 py-2 rounded-full shadow-xl pointer-events-none">
+          {toast.msg}
+        </div>
+      )}
     </div>
   );
 }
